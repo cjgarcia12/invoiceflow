@@ -15,3 +15,25 @@ body {
 .auth-page {
   @apply flex h-screen w-full flex-col items-center justify-center gap-10;
 }
+
+
+@media print {
+  /* Hide everything except the invoice */
+  body > *:not(.print-area) {
+    display: none !important;
+  }
+
+  /* Ensure full bleed printing */
+  .print-area {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Force A4 dimensions */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+}

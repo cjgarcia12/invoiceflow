@@ -7,7 +7,7 @@ type Props = {
 const Header: React.FC<Props> = ({ children }) => {
   return (
     <header className="flex items-center justify-center w-full h-[50px]">
-        <div className='flex w-5/6 justify-between'>
+
             {children}
             <Image
                 src="/logo.png"
@@ -23,7 +23,6 @@ const Header: React.FC<Props> = ({ children }) => {
                 height={100}
                 className="mr-2 md:hidden"
             />
-        </div>
     </header>
   );
 };
