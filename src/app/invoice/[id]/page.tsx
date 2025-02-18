@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import InvoiceTemplate from "@/components/InvoiceTemplate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import Header from "@/components/header";
 import PDFInvoiceTemplate from "@/components/PDFInvoiceTemplate";
 import { pdf } from "@react-pdf/renderer";
 import { UserButton } from "@clerk/nextjs";
+import {getInvoice, updateInvoice} from "@/lib/api";
+import {useRouter} from "next/router";
 
 interface InvoiceData {
   companyName?: string;
@@ -36,9 +38,61 @@ interface InvoiceData {
 }
 
 const InvoicePage: React.FC = () => {
+    const router = useRouter();
+  const { id } = router.query;
+
   const [invoiceData, setInvoiceData] = useState<InvoiceData>({
     items: [{ description: "", hours: 0, cost: 0, amount: 0 }],
+    companyName: "",
+    companyAddress: "",
+    cityStatePin: "",
+    invoiceNumber: "",
+    billingInfo: {
+      name: "",
+      address: "",
+      date: "",
+      email: ""
+    },
+    notes: "",
+    subtotal: 0,
+    discount: 0,
+    tax: 0,
+    shipping: 0,
+    total: 0
   });
+
+  useEffect(() => {
+    if (id && typeof id === 'string') {
+      getInvoice(parseInt(id))
+        .then(data => {
+          setInvoiceData(prev => ({
+            ...prev,
+            ...data
+          }));
+        })
+        .catch(error => {
+          console.error('Failed to fetch invoice:', error);
+          // Consider adding error handling UI here
+        });
+    }
+  }, [id]);
+
+  const handleUpdateInvoice = async () => {
+    if (!id) {
+      alert("No Invoice ID Found");
+      return;
+    }
+
+    const invoiceId = typeof id === 'string' ? parseInt(id) : id;
+
+    try {
+      await updateInvoice(invoiceId, invoiceData);
+      alert("invoice Saved Successfully");
+    } catch (error) {
+      console.error("invoice Failed To Save", error);
+      alert("Something Went Wrong With Saving. Please try again later.");
+    }
+  }
 
   const updateCompanyInfo = (
     field: keyof Omit<InvoiceData, "billingInfo" | "items">,
@@ -96,10 +150,6 @@ const InvoicePage: React.FC = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  };
-
-  const handleInvoiceSave = async () => {
-    alert("has been saved");
   };
 
   return (
@@ -324,7 +374,7 @@ const InvoicePage: React.FC = () => {
 
           <div className="w-full flex justify-end pr-4 pt-2">
             <Button
-              onClick={handleInvoiceSave}
+              onClick={handleUpdateInvoice}
               className="hover:scale-105 transition ease-in-out"
             >
               Save Invoice
